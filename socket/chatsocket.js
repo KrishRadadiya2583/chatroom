@@ -20,6 +20,12 @@ module.exports = (io) => {
         (u) => u.room === room
       );
 
+       async function loadMessages() {
+      const messages = await Msg.find().sort({ timestamp: -1 }).limit(15);
+      socket.emit("loadMessages", messages.reverse());
+    }
+    loadMessages();
+
 
       io.to(room).emit("userList", roomUsers);
 
@@ -57,11 +63,7 @@ module.exports = (io) => {
       socket.broadcast.to(user.room).emit("typing", `${user.username} is typing...`);
     });
 
-    async function loadMessages() {
-      const messages = await Msg.find().sort({ timestamp: -1 }).limit(15).sort({ timestamp: 1 });
-      socket.emit("loadMessages", messages);
-    }
-    loadMessages();
+   
 
     socket.on("disconnect", () => {
       const user = users[socket.id];
